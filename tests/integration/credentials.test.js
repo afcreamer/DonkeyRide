@@ -17,9 +17,7 @@ process.env.ENABLE_RATE_LIMITING = 'false';
 // ENABLE_NIP98_AUTH=true would otherwise watch this file fail with 401s that
 // say nothing about credentials.
 process.env.ENABLE_NIP98_AUTH = 'false';
-// 0 asks the OS for a free port. A guessed one can be in use, or refused
-// outright by the OS — see tests/helpers/ws-port.js.
-process.env.WS_PORT = '0';
+process.env.WS_PORT = '0'; // OS-assigned; see tests/helpers/ws-port.js
 // No relay: boot rehydrates non-terminal tasks from Nostr snapshots, so a
 // developer with a relay in their .env would start this test with their own
 // live jobs already loaded. Durability is not what is under test here.

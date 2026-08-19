@@ -28,9 +28,7 @@ process.env.SCHEDULE_EXPIRE_GRACE_MS = '1200';
 // Pin the horizon so the too-far-ahead test is independent of the default
 process.env.SCHEDULE_MAX_ADVANCE_MS = String(7 * 24 * 3600 * 1000);
 // Random high port so parallel test files never collide
-// 0 asks the OS for a free port. A guessed one can be in use, or refused
-// outright by the OS — see tests/helpers/ws-port.js.
-process.env.WS_PORT = '0';
+process.env.WS_PORT = '0'; // OS-assigned; see tests/helpers/ws-port.js
 // No relay: boot rehydrates non-terminal tasks from Nostr snapshots, so a
 // developer with a relay in their .env would start this test with their own
 // live jobs already loaded. Durability is not what is under test here.
