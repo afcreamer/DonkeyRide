@@ -13,7 +13,7 @@ POSIX shell, not to add a second way of doing things.
 
 | | Windows | Linux / macOS |
 |---|---|---|
-| `npm test` (backend unit + integration) | Yes — but see [reserved ports](#reserved-port-ranges) | Yes |
+| `npm test` (backend unit + integration) | Yes | Yes |
 | `npm run test:live` | Yes | Yes |
 | `cd web && npm test`, `npm run build` | Yes | Yes |
 | `npm run test:ui`, `test:ui:direct` (Chromium) | Yes | Yes |
@@ -98,42 +98,24 @@ mode — it will fail with `no matching manifest for windows/amd64`.
 
 ## Reserved port ranges
 
-This one is environmental, not a script problem, and it is the most likely
-thing to make a Windows run look broken.
-
-Eighteen integration tests each pick a WebSocket port at random from a
-hand-assigned band, e.g. `52000 + Math.floor(Math.random() * 400)`. Windows
-reserves blocks of TCP ports for Hyper-V, WSL and Docker, and a process that
-tries to bind one gets `EACCES: permission denied` — the file dies on
-`require`, before any test runs, so it is reported as a failed file rather
-than a failed assertion.
-
-List the reservations:
+Windows reserves blocks of TCP ports for Hyper-V, WSL and Docker. Binding one
+fails with `EACCES: permission denied`. To see the reservations:
 
 ```powershell
 netsh interface ipv4 show excludedportrange protocol=tcp
 ```
 
-On one machine two bands were badly hit — 81% of `back-to-back`'s band and
-66% of `dropoff-change`'s sat inside reserved ranges, while the other sixteen
-were untouched. Those two files then failed on almost every run. Which bands
-collide is specific to a machine's reservations, so the symptom looks
-arbitrary and moves around.
+The integration tests used to guess a WebSocket port from a hand-assigned band
+per file, which walked straight into those blocks: on one machine 81% of
+`back-to-back`'s band and 66% of `dropoff-change`'s were reserved, so both
+files died on `require` — before a single test ran — on almost every run,
+while the other sixteen files were never affected.
 
-Options, in order of preference:
-
-1. Re-run. A different draw usually lands outside the reserved block, though
-   that is luck rather than a fix.
-2. Move Windows' dynamic port range away from the 41000–54500 band the tests
-   use, in an elevated prompt, then reboot:
-   `netsh int ipv4 set dynamicport tcp start=10000 num=16384`
-3. Run the suite under WSL2, where the reservations do not apply.
-
-A durable fix belongs in the tests: bind an ephemeral port and read back what
-the OS assigned, instead of guessing one. It is not a one-line change, because
-the port has to be known before `server.js` is required — the test sets
-`process.env.WS_PORT` and the server binds at require time — so it is left
-for its own change rather than smuggled in here.
+They now set `WS_PORT=0` and read back the port the OS assigned, via
+`tests/helpers/ws-port.js`. A reservation can no longer affect them, and
+neither can a collision between two files running at once. If you do see
+`EACCES` on a bind, it is something else on the machine, and the command above
+will show you what is spoken for.
 
 ## Line endings
 

@@ -24,8 +24,9 @@ process.env.ENABLE_NIP98_AUTH = 'false';
 // of 3). Durability is not what is under test here.
 require('../helpers/isolate-relays');
 process.env.REQUEST_RETRY_MS = '600000';
-const WS_PORT = 53000 + Math.floor(Math.random() * 400);
-process.env.WS_PORT = String(WS_PORT);
+// 0 asks the OS for a free port. A guessed one can be in use, or refused
+// outright by the OS — see tests/helpers/ws-port.js.
+process.env.WS_PORT = '0';
 
 const { test, before, after } = require('node:test');
 const assert = require('node:assert/strict');

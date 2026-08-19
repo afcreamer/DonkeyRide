@@ -19,8 +19,9 @@ process.env.PAYMENT_PROVIDER = 'demo';
 process.env.ENABLE_NIP98_AUTH = 'true';
 process.env.ENABLE_RATE_LIMITING = 'false';
 process.env.DISPATCH_RADIUS_KM = '15';
-const WS_PORT = 43000 + Math.floor(Math.random() * 2000);
-process.env.WS_PORT = String(WS_PORT);
+// 0 asks the OS for a free port. A guessed one can be in use, or refused
+// outright by the OS — see tests/helpers/ws-port.js.
+process.env.WS_PORT = '0';
 // No relay: boot rehydrates non-terminal tasks from Nostr snapshots, so a
 // developer with a relay in their .env would start this test with their own
 // live jobs already loaded. Durability is not what is under test here.
@@ -33,6 +34,7 @@ const WebSocket = require('ws');
 const { generatePrivateKey, getPublicKey, nip19 } = require('nostr-tools');
 
 const { app, startServer, getWss, pushService } = require('../../server.js');
+const { wsUrl } = require('../helpers/ws-port');
 const { generateAuthEvent, createAuthHeader } = require('../../middleware/nip98-auth');
 const { encodeGeohash } = require('../../src/utils/geohash');
 
@@ -179,8 +181,7 @@ test('a driver with an open dispatch socket gets WS, not push', async () => {
   }, driver.priv);
 
   // Connect and register over WS (auth handshake first)
-  const wsUrl = `ws://127.0.0.1:${WS_PORT}`;
-  const ws = new WebSocket(wsUrl);
+  const ws = new WebSocket(wsUrl());
   const frames = [];
   ws.on('message', (raw) => {
     try { frames.push(JSON.parse(raw.toString())); } catch { /* ignore */ }
@@ -189,7 +190,7 @@ test('a driver with an open dispatch socket gets WS, not push', async () => {
     ws.once('open', resolve);
     ws.once('error', reject);
   });
-  ws.send(JSON.stringify({ type: 'auth', event: generateAuthEvent(wsUrl, 'GET', driver.priv) }));
+  ws.send(JSON.stringify({ type: 'auth', event: generateAuthEvent(wsUrl(), 'GET', driver.priv) }));
   const deadline = Date.now() + 3000;
   while (!frames.some((f) => f.type === 'auth_ok') && Date.now() < deadline) {
     await sleep(25);

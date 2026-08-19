@@ -20,8 +20,9 @@ process.env.DISPATCH_RADIUS_MAX_KM = '30';
 process.env.SCHEDULE_SWEEP_MS = '120';
 process.env.REQUEST_RETRY_MS = '150';
 process.env.REQUEST_EXPIRE_MS = '900';
-const WS_PORT = 46100 + Math.floor(Math.random() * 400);
-process.env.WS_PORT = String(WS_PORT);
+// 0 asks the OS for a free port. A guessed one can be in use, or refused
+// outright by the OS — see tests/helpers/ws-port.js.
+process.env.WS_PORT = '0';
 // No relay: boot rehydrates non-terminal tasks from Nostr snapshots, so a
 // developer with a relay in their .env would start this test with their own
 // live jobs already loaded. Durability is not what is under test here.
@@ -34,6 +35,7 @@ const WebSocket = require('ws');
 const { generatePrivateKey, getPublicKey, nip19 } = require('nostr-tools');
 
 const { app, startServer, getWss } = require('../../server.js');
+const { wsUrl } = require('../helpers/ws-port');
 
 const riderPriv = generatePrivateKey();
 const riderPub = getPublicKey(riderPriv);
@@ -87,7 +89,7 @@ const createRide = (extra = {}) => post('/api/rides/request', {
 
 /** Watch a ride's socket and collect frames */
 async function watchRide(rideId) {
-  const ws = new WebSocket(`ws://127.0.0.1:${WS_PORT}`);
+  const ws = new WebSocket(wsUrl());
   const frames = [];
   ws.on('message', (raw) => {
     try { frames.push(JSON.parse(raw.toString())); } catch { /* ignore */ }

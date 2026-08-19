@@ -23,8 +23,9 @@ process.env.CANCEL_GRACE_MS = '150';
 process.env.REPUTATION_RELAYS = 'ws://127.0.0.1:1';
 process.env.NOSTR_RELAYS = '';
 require('../helpers/isolate-relays');
-const WS_PORT = 46800 + Math.floor(Math.random() * 400);
-process.env.WS_PORT = String(WS_PORT);
+// 0 asks the OS for a free port. A guessed one can be in use, or refused
+// outright by the OS — see tests/helpers/ws-port.js.
+process.env.WS_PORT = '0';
 
 const { test, before, after } = require('node:test');
 const assert = require('node:assert/strict');
