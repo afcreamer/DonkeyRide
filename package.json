@@ -21,7 +21,7 @@
     "test:ui": "npm --prefix web run test:ui",
     "test:ui:direct": "npm --prefix web run test:ui:direct",
     "test:ui:live": "npm --prefix web run test:ui:live",
-    "test:regtest": "tests/regtest/run.sh",
+    "test:regtest": "node tests/regtest/run.js",
     "dev:nix": "nix run .#services & npm run dev",
     "web:dev": "npm --prefix web run dev",
     "web:build": "npm --prefix web run build",
