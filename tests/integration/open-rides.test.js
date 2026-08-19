@@ -19,8 +19,9 @@ process.env.ENABLE_NIP98_AUTH = 'true';
 process.env.ENABLE_RATE_LIMITING = 'false';
 process.env.DISPATCH_RADIUS_KM = '15';
 // Random high port so parallel test files never collide
-const WS_PORT = 41000 + Math.floor(Math.random() * 2000);
-process.env.WS_PORT = String(WS_PORT);
+// 0 asks the OS for a free port. A guessed one can be in use, or refused
+// outright by the OS — see tests/helpers/ws-port.js.
+process.env.WS_PORT = '0';
 // No relay: boot rehydrates non-terminal tasks from Nostr snapshots, so a
 // developer with a relay in their .env would start this test with their own
 // live jobs already loaded. Durability is not what is under test here.
@@ -33,6 +34,7 @@ const WebSocket = require('ws');
 const { generatePrivateKey, getPublicKey, nip19 } = require('nostr-tools');
 
 const { app, startServer, getWss } = require('../../server.js');
+const { wsUrl } = require('../helpers/ws-port');
 const { generateAuthEvent, createAuthHeader } = require('../../middleware/nip98-auth');
 const { encodeGeohash } = require('../../src/utils/geohash');
 
@@ -112,7 +114,6 @@ async function createRide() {
 
 // ── WS helpers ──────────────────────────────────────
 
-const wsUrl = () => `ws://127.0.0.1:${WS_PORT}`;
 
 /** Connect, authenticate, and register a driver; returns {ws, frames} */
 async function connectDriver(driver, { location, areas } = {}) {

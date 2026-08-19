@@ -5,7 +5,9 @@ process.env.PAYMENT_PROVIDER = 'demo';
 process.env.ENABLE_NIP98_AUTH = 'false';
 process.env.ENABLE_RATE_LIMITING = 'false';
 process.env.OPERATOR_DATA_MODE = 'blind';
-process.env.WS_PORT = String(47800 + Math.floor(Math.random() * 500));
+// 0 asks the OS for a free port. A guessed one can be in use, or refused
+// outright by the OS — see tests/helpers/ws-port.js.
+process.env.WS_PORT = '0';
 require('../helpers/isolate-relays');
 
 const { test, before, after } = require('node:test');

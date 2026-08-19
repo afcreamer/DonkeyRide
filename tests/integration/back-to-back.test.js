@@ -23,8 +23,9 @@ process.env.DISPATCH_RADIUS_MAX_KM = '2';
 process.env.BACK_TO_BACK_LEAD_KM = '3';
 // Keep the retry sweep out of the way — it would widen the radius for us
 process.env.REQUEST_RETRY_MS = '600000';
-const WS_PORT = 52000 + Math.floor(Math.random() * 400);
-process.env.WS_PORT = String(WS_PORT);
+// 0 asks the OS for a free port. A guessed one can be in use, or refused
+// outright by the OS — see tests/helpers/ws-port.js.
+process.env.WS_PORT = '0';
 // No relay: boot rehydrates non-terminal tasks from Nostr snapshots, so a
 // developer with a relay in their .env would start this test with their own
 // live jobs already loaded. Durability is not what is under test here.
@@ -37,6 +38,7 @@ const WebSocket = require('ws');
 const { generatePrivateKey, getPublicKey, nip19 } = require('nostr-tools');
 
 const { app, startServer, getWss } = require('../../server.js');
+const { wsUrl } = require('../helpers/ws-port');
 
 function makeIdentity() {
   const priv = generatePrivateKey();
@@ -88,7 +90,7 @@ const wait = (ms) => new Promise((r) => setTimeout(r, ms));
 
 /** A driver socket registered at DRIVER, collecting every frame it gets */
 async function onlineDriver() {
-  const ws = new WebSocket(`ws://127.0.0.1:${WS_PORT}`);
+  const ws = new WebSocket(wsUrl());
   const frames = [];
   await new Promise((resolve, reject) => {
     ws.on('open', resolve);

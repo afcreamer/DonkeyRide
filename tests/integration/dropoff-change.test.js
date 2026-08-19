@@ -24,8 +24,9 @@ process.env.PAYMENT_PROVIDER = 'demo';
 process.env.ENABLE_NIP98_AUTH = 'true';
 process.env.ENABLE_RATE_LIMITING = 'false';
 process.env.FREE_WAITING_MINUTES = '0';
-const WS_PORT = 51000 + Math.floor(Math.random() * 400);
-process.env.WS_PORT = String(WS_PORT);
+// 0 asks the OS for a free port. A guessed one can be in use, or refused
+// outright by the OS — see tests/helpers/ws-port.js.
+process.env.WS_PORT = '0';
 // No relay: boot rehydrates non-terminal tasks from Nostr snapshots, so a
 // developer with a relay in their .env would start this test with their own
 // live jobs already loaded. Durability is not what is under test here.
@@ -38,6 +39,7 @@ const WebSocket = require('ws');
 const { generatePrivateKey, getPublicKey, nip19 } = require('nostr-tools');
 
 const { app, startServer, getWss } = require('../../server.js');
+const { wsUrl } = require('../helpers/ws-port');
 const { generateAuthEvent, createAuthHeader } = require('../../middleware/nip98-auth');
 
 function makeIdentity() {
@@ -141,13 +143,13 @@ test('a new destination re-prices, re-routes and tells the provider', async () =
   await acceptRide(rideId);
   const before = await getRide(rideId, rider.priv);
 
-  const ws = new WebSocket(`ws://127.0.0.1:${WS_PORT}`);
+  const ws = new WebSocket(wsUrl());
   const frames = [];
   await new Promise((resolve, reject) => {
     ws.on('open', () => {
       ws.send(JSON.stringify({
         type: 'auth',
-        event: generateAuthEvent(`ws://127.0.0.1:${WS_PORT}`, 'GET', driver.priv)
+        event: generateAuthEvent(wsUrl(), 'GET', driver.priv)
       }));
       ws.send(JSON.stringify({ type: 'subscribe_ride', rideId }));
       setTimeout(resolve, 250);
