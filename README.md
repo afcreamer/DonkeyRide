@@ -139,6 +139,10 @@ npm run test:ui:live
 npm run test:ui
 ```
 
+These run on Windows as well as Linux and macOS. The one exception is
+`npm run test:regtest`, whose Lightning harness needs a Linux container
+runtime — see [Windows development](./docs/WINDOWS-DEV.md).
+
 The direct browser journey covers discovery, no-money matching, encrypted exact
 itinerary handoff, road routing, acceptance, arrival, start and completion. A
 separate browser check denies location permission and proves manual pickup

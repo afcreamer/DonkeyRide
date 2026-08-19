@@ -28,14 +28,19 @@ node --test tests/integration/reputation-flow.test.js
 node --test tests/integration/domain-profiles.test.js
 ```
 
-`npm test` selects files with `find tests -name '*.test.js' -not -path 'tests/live/*'`
-rather than a shell glob. `tests/**/*.test.js` looks recursive but npm runs
-scripts under `sh`, where `**` is just `*` — it matched exactly one directory
-deep, so a test at `tests/unit/nested/x.test.js` would have been silently
-skipped rather than failing loudly. `find` is also version-independent: bare
-`node --test` does discover recursively, but its naming conventions have
-shifted across releases and CI runs Node 20 and 22. Live tests are excluded
-here and run via `npm run test:live`, so `npm test` never touches the network.
+`npm test` selects files with `tests/helpers/list-test-files.js` rather than a
+shell glob. `tests/**/*.test.js` looks recursive but npm runs scripts under
+`sh`, where `**` is just `*` — it matched exactly one directory deep, so a test
+at `tests/unit/nested/x.test.js` would have been silently skipped rather than
+failing loudly. The walker is also version-independent: bare `node --test` does
+discover recursively, but its naming conventions have shifted across releases
+and CI runs Node 20 and 22. It replaced a `find` expression that had both of
+those properties but left `npm test` unrunnable on Windows, where npm runs
+scripts under `cmd.exe` — no `find`, no command substitution. CI reads the same
+module rather than a second copy of the rule, so the two selections cannot
+drift. Live tests are excluded here and run via `npm run test:live`, so
+`npm test` never touches the network. Windows specifics, including the regtest
+harness, are in [docs/WINDOWS-DEV.md](docs/WINDOWS-DEV.md).
 
 **Frontend dependencies are separate** — run `npm install` in `web/` before using `web:*` commands.
 
