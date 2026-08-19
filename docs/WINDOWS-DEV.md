@@ -16,6 +16,7 @@ POSIX shell, not to add a second way of doing things.
 | `npm test` (backend unit + integration) | Yes — but see [reserved ports](#reserved-port-ranges) | Yes |
 | `npm run test:live` | Yes | Yes |
 | `cd web && npm test`, `npm run build` | Yes | Yes |
+| `npm run test:ui`, `test:ui:direct` (Chromium) | Yes | Yes |
 | `npm run native:driver:android` + Gradle APK | Yes | Yes |
 | `npm run test:regtest` | Only via WSL2 (see below) | Yes |
 | `scripts/*.sh` (release/publish) | Git Bash or WSL | Yes |
@@ -32,6 +33,7 @@ logic moved into Node, which every contributor already has:
 | `$(find tests -name '*.test.js' … \| sort)` | `tests/helpers/list-test-files.js` |
 | `LIVE_RELAY_URL=${LIVE_RELAY_URL:-…} node --test` | `tests/helpers/run-live-tests.js` |
 | `rm -rf`/`cp -r` staging the native driver bundle | `web/scripts/prepare-native-driver.mjs` |
+| `VITE_x=y npm run build && … node server.js` in the Playwright configs | `web/scripts/e2e-webserver.mjs` |
 | `tests/regtest/run.sh` | `tests/regtest/run.js` |
 
 `tests/helpers/list-test-files.js` is worth one extra note. `npm test` and the

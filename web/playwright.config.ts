@@ -44,11 +44,9 @@ export default defineConfig({
     },
   ],
   webServer: useLocalServer ? {
-    command: `VITE_COORDINATION_MODE=managed VITE_WS_URL=ws://127.0.0.1:${WS_PORT} npm run build && cd .. && `
-      + `PORT=${HTTP_PORT} WS_PORT=${WS_PORT} NODE_ENV=test PAYMENT_PROVIDER=cash `
-      + 'DISABLE_REDIS=true ENABLE_NIP98_AUTH=true ENABLE_RATE_LIMITING=false '
-      + 'OPERATOR_DATA_MODE=blind PUBLIC_ROUTING_URL=/routing '
-      + 'NOSTR_RELAY= PUBLIC_RELAY_URLS= REPUTATION_RELAYS= node server.js',
+    // Build and operator environment live in the script: a `VAR=value cmd`
+    // chain here would be run by cmd.exe on Windows, which has no such form.
+    command: `node scripts/e2e-webserver.mjs managed ${HTTP_PORT} ${WS_PORT}`,
     url: `${baseURL}/health`,
     timeout: 120_000,
     reuseExistingServer: false,

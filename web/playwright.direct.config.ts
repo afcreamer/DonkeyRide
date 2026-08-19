@@ -29,9 +29,9 @@ export default defineConfig({
     },
   }],
   webServer: {
-    command: 'VITE_COORDINATION_MODE=direct VITE_NOSTR_RELAYS=wss://relay.test '
-      + 'VITE_PUBLIC_ROUTING_URL=/routing npm run build && '
-      + `STATIC_PWA_PORT=${port} node e2e/static-server.mjs`,
+    // See playwright.config.ts: the build/serve environment moves into the
+    // script so the command does not depend on a POSIX shell.
+    command: `node scripts/e2e-webserver.mjs direct ${port}`,
     url: baseURL,
     timeout: 120_000,
     reuseExistingServer: false,
