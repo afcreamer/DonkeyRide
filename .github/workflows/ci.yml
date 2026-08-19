@@ -55,10 +55,11 @@ jobs:
       # developers and the flake is specific to these runners. The FILE
       # SELECTION is identical, which is the part that must not drift.
       - run: |
-          # Same selection as `npm test` — recursive, live tests excluded.
+          # The SAME selection as `npm test`, from the same module rather than
+          # from a second copy of the rule — recursive, live tests excluded.
           # This used to hardcode tests/integration/*.test.js, so a test in any
           # other directory was silently never run in CI.
-          FILES=$(find tests -name '*.test.js' -not -path 'tests/live/*' | sort)
+          FILES=$(node tests/helpers/list-test-files.js)
           test -n "$FILES" || { echo "No test files found"; exit 1; }
           echo "$FILES" | sed 's/^/  /'
 
